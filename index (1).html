@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐕 Tính Calo Hàng Ngày - VetLife</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 30%, #7CB342 70%, #558B2F 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sun */
+        .sun {
+            position: fixed;
+            top: 30px;
+            right: 80px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #FFD54F 0%, #FF8F00 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 60px #FFD54F, 0 0 100px #FF8F00;
+            animation: pulse 3s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .sun-rays {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            background: transparent;
+            border-radius: 50%;
+            animation: rotateSun 20s linear infinite;
+        }
+
+        .sun-rays::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 20px;
+            background: #FFD54F;
+            border-radius: 2px;
+            box-shadow: 
+                0 100px 0 #FFD54F,
+                -50px 15px 0 #FFD54F,
+                50px 15px 0 #FFD54F,
+                -50px 85px 0 #FFD54F,
+                50px 85px 0 #FFD54F;
+        }
+
+        @keyframes rotateSun {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 60px #FFD54F, 0 0 100px #FF8F00; }
+            50% { transform: scale(1.05); box-shadow: 0 0 80px #FFD54F, 0 0 120px #FF8F00; }
+        }
+
+        /* Clouds */
+        .cloud {
+            position: fixed;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.9;
+            z-index: 2;
+        }
+
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .cloud-1 {
+            width: 100px;
+            height: 40px;
+            top: 60px;
+            animation: moveCloud 25s linear infinite;
+        }
+
+        .cloud-1::before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 15px;
+        }
+
+        .cloud-1::after {
+            width: 35px;
+            height: 35px;
+            top: -15px;
+            left: 55px;
+        }
+
+        .cloud-2 {
+            width: 80px;
+            height: 30px;
+            top: 100px;
+            animation: moveCloud 30s linear infinite;
+            animation-delay: -10s;
+        }
+
+        .cloud-2::before {
+            width: 40px;
+            height: 40px;
+            top: -20px;
+            left: 10px;
+        }
+
+        .cloud-2::after {
+            width: 30px;
+            height: 30px;
+            top: -12px;
+            left: 40px;
+        }
+
+        .cloud-3 {
+            width: 120px;
+            height: 45px;
+            top: 150px;
+            animation: moveCloud 35s linear infinite;
+            animation-delay: -18s;
+        }
+
+        .cloud-3::before {
+            width: 55px;
+            height: 55px;
+            top: -30px;
+            left: 20px;
+        }
+
+        .cloud-3::after {
+            width: 40px;
+            height: 40px;
+            top: -18px;
+            left: 65px;
+        }
+
+        @keyframes moveCloud {
+            0% { left: -150px; }
+            100% { left: 100vw; }
+        }
+
+        /* Trees */
+        .tree {
+            position: fixed;
+            bottom: 0;
+            z-index: 5;
+        }
+
+        .tree-trunk {
+            background: linear-gradient(90deg, #5D4037 0%, #8D6E63 50%, #5D4037 100%);
+            border-radius: 5px;
+        }
+
+        .tree-leaves {
+            background: linear-gradient(180deg, #43A047 0%, #2E7D32 100%);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        /* Grass */
+        .grass {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(180deg, #7CB342 0%, #558B2F 100%);
+            z-index: 10;
+        }
+
+        .grass::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 20'%3E%3Cpath d='M0,20 Q5,10 10,20 Q15,5 20,20 Q25,8 30,20 Q35,12 40,20 Q45,6 50,20 Q55,10 60,20 Q65,8 70,20 Q75,14 80,20 Q85,7 90,20 Q95,11 100,20 L100,20 L0,20 Z' fill='%237CB342'/%3E%3C/svg%3E") repeat-x;
+            background-size: 100px 40px;
+        }
+
+        /* Corgi Dog */
+        .corgi-container {
+            position: fixed;
+            bottom: 50px;
+            z-index: 20;
+            animation: runCorgi 10s linear infinite;
+        }
+
+        @keyframes runCorgi {
+            0% { left: -120px; }
+            100% { left: calc(100vw + 120px); }
+        }
+
+        .corgi {
+            width: 100px;
+            height: 70px;
+            position: relative;
+            animation: bounce 0.3s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Corgi Body - Long and low */
+        .corgi-body {
+            position: absolute;
+            width: 65px;
+            height: 30px;
+            background: linear-gradient(180deg, #F4A460 0%, #DEB887 40%, #FFEFD5 100%);
+            border-radius: 30px 25px 20px 25px;
+            top: 22px;
+            left: 15px;
+            box-shadow: inset 0 -8px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        /* Corgi famous butt */
+        .corgi-butt {
+            position: absolute;
+            width: 32px;
+            height: 28px;
+            background: linear-gradient(180deg, #F4A460 0%, #DEB887 50%, #FFEFD5 100%);
+            border-radius: 50%;
+            top: 20px;
+            left: 8px;
+            box-shadow: inset 0 -5px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .corgi-butt::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #FFEFD5;
+            border-radius: 50%;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Corgi Head */
+        .corgi-head {
+            position: absolute;
+            width: 32px;
+            height: 28px;
+            background: linear-gradient(180deg, #F4A460 0%, #DEB887 100%);
+            border-radius: 50% 50% 45% 45%;
+            top: 12px;
+            left: 65px;
+        }
+
+        /* Corgi Snout */
+        .corgi-snout {
+            position: absolute;
+            width: 22px;
+            height: 16px;
+            background: linear-gradient(180deg, #FFEFD5 0%, #FFF8DC 100%);
+            border-radius: 50%;
+            top: 14px;
+            left: 8px;
+        }
+
+        /* Corgi Big Ears */
+        .corgi-ear {
+            position: absolute;
+            width: 14px;
+            height: 22px;
+            background: linear-gradient(180deg, #F4A460 0%, #DEB887 100%);
+            border-radius: 50% 50% 30% 30%;
+            top: -12px;
+            animation: earWiggle 0.2s ease-in-out infinite;
+        }
+
+        .corgi-ear::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 12px;
+            background: #FFD5B5;
+            border-radius: 50%;
+            top: 5px;
+            left: 3px;
+        }
+
+        .corgi-ear.left { 
+            left: 3px; 
+            transform: rotate(-15deg);
+        }
+        .corgi-ear.right { 
+            right: 3px; 
+            transform: rotate(15deg);
+            animation-delay: 0.1s;
+        }
+
+        @keyframes earWiggle {
+            0%, 100% { transform: rotate(-15deg); }
+            50% { transform: rotate(-5deg); }
+        }
+
+        .corgi-ear.right {
+            animation-name: earWiggleRight;
+        }
+
+        @keyframes earWiggleRight {
+            0%, 100% { transform: rotate(15deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        /* Corgi Eyes */
+        .corgi-eye {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #333;
+            border-radius: 50%;
+            top: 8px;
+        }
+
+        .corgi-eye::before {
+            content: '';
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            top: 1px;
+            left: 1px;
+        }
+
+        .corgi-eye.left { left: 6px; }
+        .corgi-eye.right { left: 18px; }
+
+        /* Corgi Nose */
+        .corgi-nose {
+            position: absolute;
+            width: 10px;
+            height: 7px;
+            background: #333;
+            border-radius: 50%;
+            top: 17px;
+            left: 11px;
+        }
+
+        /* Corgi Smile */
+        .corgi-smile {
+            position: absolute;
+            width: 14px;
+            height: 8px;
+            border: 3px solid #333;
+            border-color: transparent transparent #333 transparent;
+            border-radius: 0 0 50% 50%;
+            top: 19px;
+            left: 9px;
+        }
+
+        /* Corgi Tongue */
+        .corgi-tongue {
+            position: absolute;
+            width: 10px;
+            height: 14px;
+            background: linear-gradient(180deg, #FF6B9D 0%, #FF4081 100%);
+            border-radius: 5px 5px 50% 50%;
+            top: 24px;
+            left: 11px;
+            animation: tongueWag 0.15s ease-in-out infinite;
+        }
+
+        @keyframes tongueWag {
+            0%, 100% { transform: rotate(-8deg) translateY(0); }
+            50% { transform: rotate(8deg) translateY(2px); }
+        }
+
+        /* Corgi Short Legs */
+        .corgi-leg {
+            position: absolute;
+            width: 10px;
+            height: 16px;
+            background: linear-gradient(180deg, #DEB887 0%, #FFEFD5 100%);
+            border-radius: 5px 5px 4px 4px;
+            top: 45px;
+        }
+
+        .corgi-leg::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 12px;
+            height: 6px;
+            background: #FFEFD5;
+            border-radius: 4px;
+        }
+
+        .corgi-leg.front-left { 
+            left: 60px; 
+            animation: runLegFront 0.15s ease-in-out infinite; 
+        }
+        .corgi-leg.front-right { 
+            left: 68px; 
+            animation: runLegFront 0.15s ease-in-out infinite 0.075s; 
+        }
+        .corgi-leg.back-left { 
+            left: 18px; 
+            animation: runLegBack 0.15s ease-in-out infinite; 
+        }
+        .corgi-leg.back-right { 
+            left: 26px; 
+            animation: runLegBack 0.15s ease-in-out infinite 0.075s; 
+        }
+
+        @keyframes runLegFront {
+            0%, 100% { transform: rotate(-35deg); height: 14px; }
+            50% { transform: rotate(35deg); height: 18px; }
+        }
+
+        @keyframes runLegBack {
+            0%, 100% { transform: rotate(35deg); height: 18px; }
+            50% { transform: rotate(-35deg); height: 14px; }
+        }
+
+        /* Corgi Tail - Short nub */
+        .corgi-tail {
+            position: absolute;
+            width: 12px;
+            height: 10px;
+            background: linear-gradient(90deg, #F4A460 0%, #FFEFD5 100%);
+            border-radius: 50%;
+            top: 18px;
+            left: 2px;
+            animation: tailWag 0.1s ease-in-out infinite;
+            transform-origin: right center;
+        }
+
+        @keyframes tailWag {
+            0%, 100% { transform: rotate(-15deg); }
+            50% { transform: rotate(15deg); }
+        }
+
+        /* Paw prints */
+        .paw-prints {
+            position: fixed;
+            bottom: 30px;
+            z-index: 15;
+            animation: pawMove 10s linear infinite;
+            opacity: 0.4;
+        }
+
+        @keyframes pawMove {
+            0% { left: -250px; }
+            100% { left: calc(100vw); }
+        }
+
+        .paw {
+            display: inline-block;
+            margin: 0 25px;
+            font-size: 18px;
+        }
+
+        /* Card styling */
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 3px solid #43A047;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 0 0 5px rgba(67, 160, 71, 0.1);
+        }
+
+        .input-field {
+            transition: all 0.3s ease;
+            border: 2px solid #C8E6C9;
+        }
+
+        .input-field:focus {
+            border-color: #43A047;
+            box-shadow: 0 0 0 4px rgba(67, 160, 71, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .gender-btn {
+            transition: all 0.3s ease;
+        }
+
+        .gender-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .gender-btn.active-male {
+            background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(30, 136, 229, 0.4);
+        }
+
+        .gender-btn.active-female {
+            background: linear-gradient(135deg, #EC407A 0%, #D81B60 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(236, 64, 122, 0.4);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%);
+            transition: all 0.3s ease;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(67, 160, 71, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            border: 2px solid #43A047;
+        }
+
+        /* Butterflies */
+        .butterfly {
+            position: fixed;
+            font-size: 22px;
+            animation: flyButterfly 18s ease-in-out infinite;
+            z-index: 5;
+        }
+
+        .butterfly:nth-child(1) { top: 20%; animation-delay: 0s; }
+        .butterfly:nth-child(2) { top: 35%; animation-delay: -6s; }
+        .butterfly:nth-child(3) { top: 50%; animation-delay: -12s; }
+
+        @keyframes flyButterfly {
+            0%, 100% { left: -30px; transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-30px) rotate(10deg); }
+            50% { left: 50vw; transform: translateY(20px) rotate(-10deg); }
+            75% { transform: translateY(-20px) rotate(5deg); }
+            100% { left: calc(100vw + 30px); transform: translateY(0) rotate(0deg); }
+        }
+
+        /* Flowers */
+        .flowers {
+            position: fixed;
+            bottom: 50px;
+            z-index: 8;
+        }
+
+        .flower {
+            display: inline-block;
+            font-size: 26px;
+            animation: sway 2s ease-in-out infinite;
+        }
+
+        .flower:nth-child(even) { animation-delay: 0.5s; }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        /* Birds */
+        .bird {
+            position: fixed;
+            font-size: 18px;
+            animation: flyBird 20s linear infinite;
+            z-index: 3;
+        }
+
+        .bird:nth-child(1) { top: 15%; animation-delay: 0s; }
+        .bird:nth-child(2) { top: 12%; animation-delay: -3s; }
+
+        @keyframes flyBird {
+            0% { left: 100vw; transform: scaleX(-1); }
+            100% { left: -50px; transform: scaleX(-1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .sun {
+                width: 50px;
+                height: 50px;
+                right: 30px;
+                top: 20px;
+            }
+            
+            .corgi {
+                transform: scale(0.8);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen py-8 px-4 relative">
+    <!-- Nature Elements -->
+    <div class="sun">
+        <div class="sun-rays"></div>
+    </div>
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+    
+    <div class="butterfly">🦋</div>
+    <div class="butterfly">🦋</div>
+    <div class="butterfly">🦋</div>
+
+    <div class="bird">🐦</div>
+    <div class="bird">🐦</div>
+
+    <!-- Trees -->
+    <div class="tree" style="left: 3%;">
+        <div class="tree-trunk" style="width: 20px; height: 80px; margin: 0 auto;"></div>
+        <div class="tree-leaves" style="width: 80px; height: 80px; bottom: 60px; left: -30px;"></div>
+        <div class="tree-leaves" style="width: 60px; height: 60px; bottom: 100px; left: -20px;"></div>
+    </div>
+    <div class="tree" style="right: 5%;">
+        <div class="tree-trunk" style="width: 25px; height: 100px; margin: 0 auto;"></div>
+        <div class="tree-leaves" style="width: 100px; height: 100px; bottom: 80px; left: -38px;"></div>
+        <div class="tree-leaves" style="width: 70px; height: 70px; bottom: 130px; left: -22px;"></div>
+    </div>
+
+    <!-- Flowers -->
+    <div class="flowers" style="left: 12%;">
+        <span class="flower">🌸</span>
+        <span class="flower">🌼</span>
+        <span class="flower">🌺</span>
+    </div>
+    <div class="flowers" style="right: 12%;">
+        <span class="flower">🌷</span>
+        <span class="flower">🌻</span>
+        <span class="flower">🌹</span>
+    </div>
+
+    <!-- Running Corgi -->
+    <div class="corgi-container">
+        <div class="corgi">
+            <!-- Tail (nub) -->
+            <div class="corgi-tail"></div>
+            <!-- Butt -->
+            <div class="corgi-butt"></div>
+            <!-- Body -->
+            <div class="corgi-body"></div>
+            <!-- Legs -->
+            <div class="corgi-leg back-left"></div>
+            <div class="corgi-leg back-right"></div>
+            <div class="corgi-leg front-left"></div>
+            <div class="corgi-leg front-right"></div>
+            <!-- Head -->
+            <div class="corgi-head">
+                <div class="corgi-ear left"></div>
+                <div class="corgi-ear right"></div>
+                <div class="corgi-snout"></div>
+                <div class="corgi-eye left"></div>
+                <div class="corgi-eye right"></div>
+                <div class="corgi-nose"></div>
+                <div class="corgi-smile"></div>
+                <div class="corgi-tongue"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paw Prints -->
+    <div class="paw-prints">
+        <span class="paw">🐾</span>
+        <span class="paw">🐾</span>
+        <span class="paw">🐾</span>
+        <span class="paw">🐾</span>
+        <span class="paw">🐾</span>
+        <span class="paw">🐾</span>
+    </div>
+
+    <div class="grass"></div>
+
+    <!-- Main Content -->
+    <div class="max-w-2xl mx-auto relative z-30 mb-20">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center gap-3 bg-white/90 px-6 py-3 rounded-full shadow-lg mb-4">
+                <span class="text-4xl">🐕</span>
+                <span class="text-2xl font-bold text-green-700">VetLife</span>
+                <span class="text-4xl">🌿</span>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white drop-shadow-lg">
+                Tính Toán Calo Hàng Ngày
+            </h1>
+            <p class="text-white/90 mt-2 text-lg drop-shadow">
+                Khỏe mạnh như chú Corgi năng động! 🐾
+            </p>
+        </div>
+
+        <!-- Calculator Card -->
+        <div class="main-card rounded-3xl p-6 md:p-8">
+            <!-- Gender Selection -->
+            <div class="mb-6">
+                <label class="block text-green-800 font-bold mb-3 text-lg">
+                    <span class="mr-2">👤</span>Giới tính
+                </label>
+                <div class="grid grid-cols-2 gap-4">
+                    <button type="button" id="maleBtn" onclick="selectGender('male')" 
+                        class="gender-btn py-4 px-6 rounded-2xl border-2 border-blue-200 bg-blue-50 font-bold text-blue-700 flex items-center justify-center gap-2">
+                        <span class="text-2xl">👨</span>
+                        <span>Nam</span>
+                    </button>
+                    <button type="button" id="femaleBtn" onclick="selectGender('female')" 
+                        class="gender-btn py-4 px-6 rounded-2xl border-2 border-pink-200 bg-pink-50 font-bold text-pink-700 flex items-center justify-center gap-2">
+                        <span class="text-2xl">👩</span>
+                        <span>Nữ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Age -->
+            <div class="mb-5">
+                <label class="block text-green-800 font-bold mb-2">
+                    <span class="mr-2">🎂</span>Tuổi
+                </label>
+                <input type="number" id="age" placeholder="Nhập tuổi của bạn" min="1" max="120"
+                    class="input-field w-full px-5 py-4 rounded-xl text-lg outline-none bg-green-50">
+            </div>
+
+            <!-- Weight -->
+            <div class="mb-5">
+                <label class="block text-green-800 font-bold mb-2">
+                    <span class="mr-2">⚖️</span>Cân nặng (kg)
+                </label>
+                <input type="number" id="weight" placeholder="Nhập cân nặng" min="1" max="500" step="0.1"
+                    class="input-field w-full px-5 py-4 rounded-xl text-lg outline-none bg-green-50">
+            </div>
+
+            <!-- Height -->
+            <div class="mb-5">
+                <label class="block text-green-800 font-bold mb-2">
+                    <span class="mr-2">📏</span>Chiều cao (cm)
+                </label>
+                <input type="number" id="height" placeholder="Nhập chiều cao" min="1" max="300" step="0.1"
+                    class="input-field w-full px-5 py-4 rounded-xl text-lg outline-none bg-green-50">
+            </div>
+
+            <!-- Activity Level -->
+            <div class="mb-6">
+                <label class="block text-green-800 font-bold mb-2">
+                    <span class="mr-2">🏃</span>Mức độ hoạt động
+                </label>
+                <select id="activity" 
+                    class="input-field w-full px-5 py-4 rounded-xl text-lg outline-none bg-green-50 cursor-pointer">
+                    <option value="1.2">Ít vận động (ngồi văn phòng)</option>
+                    <option value="1.375">Vận động nhẹ (1-3 ngày/tuần)</option>
+                    <option value="1.55" selected>Vận động vừa (3-5 ngày/tuần)</option>
+                    <option value="1.725">Vận động nhiều (6-7 ngày/tuần)</option>
+                    <option value="1.9">Vận động rất nhiều (2 lần/ngày)</option>
+                </select>
+            </div>
+
+            <!-- Calculate Button -->
+            <button onclick="calculateCalories()" 
+                class="calculate-btn w-full py-4 rounded-2xl text-white font-bold text-xl flex items-center justify-center gap-3 shadow-lg">
+                <span>🔥</span>
+                <span>Tính Toán Calo</span>
+                <span>🐕</span>
+            </button>
+
+            <!-- Results -->
+            <div id="results" class="hidden mt-6">
+                <div class="result-card rounded-2xl p-6">
+                    <h3 class="text-xl font-bold text-green-800 mb-4 flex items-center gap-2">
+                        <span>📊</span> Kết Quả Của Bạn
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <!-- BMR -->
+                        <div class="bg-white rounded-xl p-4 shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 font-medium">Tỷ lệ trao đổi chất cơ bản (BMR)</span>
+                                <span id="bmrResult" class="text-2xl font-bold text-green-600">0</span>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-1">Calo cần thiết khi nghỉ ngơi</p>
+                        </div>
+
+                        <!-- TDEE -->
+                        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-5 shadow-lg">
+                            <div class="flex justify-between items-center text-white">
+                                <span class="font-medium text-lg">Tổng calo cần thiết mỗi ngày</span>
+                                <span id="tdeeResult" class="text-3xl font-bold">0</span>
+                            </div>
+                            <p class="text-green-100 text-sm mt-1">TDEE - Dựa trên mức độ hoạt động của bạn</p>
+                        </div>
+
+                        <!-- Goals -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+                            <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-center">
+                                <div class="text-red-500 text-sm font-medium mb-1">🔻 Giảm cân</div>
+                                <div id="loseWeight" class="text-xl font-bold text-red-600">0</div>
+                                <div class="text-xs text-gray-500">calo/ngày</div>
+                            </div>
+                            <div class="bg-green-50 border-2 border-green-200 rounded-xl p-4 text-center">
+                                <div class="text-green-500 text-sm font-medium mb-1">⚖️ Duy trì</div>
+                                <div id="maintainWeight" class="text-xl font-bold text-green-600">0</div>
+                                <div class="text-xs text-gray-500">calo/ngày</div>
+                            </div>
+                            <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 text-center">
+                                <div class="text-blue-500 text-sm font-medium mb-1">🔺 Tăng cân</div>
+                                <div id="gainWeight" class="text-xl font-bold text-blue-600">0</div>
+                                <div class="text-xs text-gray-500">calo/ngày</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tips -->
+                    <div class="mt-5 bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4">
+                        <div class="flex items-start gap-3">
+                            <span class="text-2xl">💡</span>
+                            <div>
+                                <h4 class="font-bold text-yellow-800">Lời khuyên từ VetLife</h4>
+                                <p class="text-yellow-700 text-sm mt-1" id="tipText">
+                                    Hãy ăn uống lành mạnh và tập thể dục đều đặn như một chú Corgi năng động!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6 text-white/80">
+            <p class="flex items-center justify-center gap-2">
+                <span>🐾</span>
+                <span>Được tạo với ❤️ bởi VetLife Team</span>
+                <span>🐾</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let selectedGender = null;
+
+        function selectGender(gender) {
+            selectedGender = gender;
+            const maleBtn = document.getElementById('maleBtn');
+            const femaleBtn = document.getElementById('femaleBtn');
+
+            maleBtn.classList.remove('active-male');
+            femaleBtn.classList.remove('active-female');
+
+            if (gender === 'male') {
+                maleBtn.classList.add('active-male');
+            } else {
+                femaleBtn.classList.add('active-female');
+            }
+        }
+
+        function calculateCalories() {
+            // Get values
+            const age = parseFloat(document.getElementById('age').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const activity = parseFloat(document.getElementById('activity').value);
+
+            // Validation
+            if (!selectedGender) {
+                showAlert('Vui lòng chọn giới tính! 👤');
+                return;
+            }
+            if (!age || age < 1 || age > 120) {
+                showAlert('Vui lòng nhập tuổi hợp lệ! 🎂');
+                return;
+            }
+            if (!weight || weight < 1 || weight > 500) {
+                showAlert('Vui lòng nhập cân nặng hợp lệ! ⚖️');
+                return;
+            }
+            if (!height || height < 1 || height > 300) {
+                showAlert('Vui lòng nhập chiều cao hợp lệ! 📏');
+                return;
+            }
+
+            // Mifflin-St Jeor Equation
+            let bmr;
+            if (selectedGender === 'male') {
+                bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+            } else {
+                bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+            }
+
+            // Calculate TDEE
+            const tdee = bmr * activity;
+
+            // Calculate goals
+            const loseWeight = tdee - 500;
+            const gainWeight = tdee + 500;
+
+            // Display results
+            document.getElementById('bmrResult').textContent = Math.round(bmr) + ' calo';
+            document.getElementById('tdeeResult').textContent = Math.round(tdee) + ' calo';
+            document.getElementById('loseWeight').textContent = Math.round(loseWeight);
+            document.getElementById('maintainWeight').textContent = Math.round(tdee);
+            document.getElementById('gainWeight').textContent = Math.round(gainWeight);
+
+            // Show tips based on activity level
+            const tips = [
+                'Hãy cố gắng vận động nhiều hơn! Dắt chú Corgi đi dạo mỗi ngày là một ý tưởng tuyệt vời! 🐕‍🦺',
+                'Bạn đang làm tốt! Hãy duy trì lối sống năng động như chú Corgi nhé! 🌟',
+                'Tuyệt vời! Bạn vận động rất tốt! Nhớ uống đủ nước và nghỉ ngơi hợp lý! 💪',
+                'Wow! Bạn là một vận động viên thực thụ! Hãy đảm bảo ăn đủ dinh dưỡng! 🏆',
+                'Siêu sao thể thao! Bạn năng động như một chú Corgi chạy marathon! 🥇'
+            ];
+            
+            const tipIndex = Math.min(Math.floor((activity - 1.2) / 0.175), 4);
+            document.getElementById('tipText').textContent = tips[tipIndex];
+
+            // Show results with animation
+            const results = document.getElementById('results');
+            results.classList.remove('hidden');
+            results.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function showAlert(message) {
+            // Create custom alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-4 rounded-xl shadow-2xl z-50 flex items-center gap-3';
+            alertDiv.style.animation = 'bounceIn 0.5s ease';
+            alertDiv.innerHTML = `
+                <span class="text-2xl">🐕</span>
+                <span class="font-bold">${message}</span>
+            `;
+            document.body.appendChild(alertDiv);
+
+            // Add animation style
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes bounceIn {
+                    0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+                    50% { transform: translateX(-50%) scale(1.1); }
+                    100% { transform: translateX(-50%) scale(1); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            setTimeout(() => {
+                alertDiv.style.animation = 'bounceIn 0.3s ease reverse';
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 3000);
+        }
+
+        // Add enter key support
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    calculateCalories();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
